@@ -2,39 +2,48 @@
 
 namespace LibrarySystem;
 
-internal class Program
+internal static class Program
 {
     internal static Library library = new();
 
     internal static void Main(string[] args)
     {
-        while (true)
-        {
-            int res = ReadMenu(
-                prompt: "Welcome to the Library system.",
-                options: [
-                    "Create new user account",
-                    "Login as user account",
-                    "Login as admin user",
-                    "Exit program"
-                ]
-            );
+        DateOnly now = DateOnly.FromDateTime(DateTime.Now);
+        library.AddBook("Hello World", "Andrew Toplass", now, 2);
+        library.AddBook("Admission", "Author 2", now);
+        library.AddBook("Schadenfreude", "Author 3", now, 5);
+        library.AddBook("Firmware", "Author 4", now);
+        library.AddBook("Lorem Ipsum", "Someone", now);
 
-            switch (res)
-            {
-                case 0:
-                    CreateUser();
-                    break;
-                case 1:
-                    SelectUser();
-                    break;
-                case 2:
-                    AdminAccount();
-                    break;
-                case 3:
-                    return;
-            }
-        }
+        InteractiveSearch(library.SearchByKeyword);
+
+        // while (true)
+        // {
+        //     int res = ReadMenu(
+        //         prompt: "Welcome to the Library system.",
+        //         options: [
+        //             "Create new user account",
+        //             "Login as user account",
+        //             "Login as admin user",
+        //             "Exit program"
+        //         ]
+        //     );
+
+        //     switch (res)
+        //     {
+        //         case 0:
+        //             CreateUser();
+        //             break;
+        //         case 1:
+        //             SelectUser();
+        //             break;
+        //         case 2:
+        //             AdminAccount();
+        //             break;
+        //         case 3:
+        //             return;
+        //     }
+        // }
     }
 
     internal static void CreateUser()
@@ -96,6 +105,7 @@ internal class Program
 
                 case 1:
                     {
+                        IEnumerable<Book> books = SelectBooks();
                         break;
                     }
 
@@ -105,12 +115,80 @@ internal class Program
         }
     }
 
+    internal static IEnumerable<Book> InteractiveSearch(Func<string, IEnumerable<Book>> searchMethod)
+    {
+        List<Book> books = [];
+
+        Console.Clear();
+        Console.WriteLine("Enter some characters to begin searching.");
+
+        string query = "";
+        // int left = 0;
+        int bottom = Console.WindowHeight - 2;
+
+        while (true)
+        {
+            // Console.SetCursorPosition(left, bottom);
+            Console.CursorTop = bottom;
+            Console.Write(query);
+            ConsoleKeyInfo key = Console.ReadKey(true);
+
+            switch (key.Key)
+            {
+                case ConsoleKey.Backspace:
+                    query = query.RemoveLast();
+                    // Backspace. Go back one char, erase char with space
+                    // (advances cursor forward), then go back again.
+                    Console.Write("\b \b");
+                    break;
+
+                default:
+                    {
+                        // Only add printable characters to search query.
+                        if (!char.IsControl(key.KeyChar))
+                        {
+                            query += key.KeyChar;
+                        }
+                        break;
+                    }
+            }
+
+            // left = Console.CursorLeft;
+            Console.Clear();
+            Console.WriteLine("Interactive Search By Title.");
+
+            if (query.Length > 0)
+            {
+                IEnumerable<Book> res = searchMethod(query);
+                foreach (Book book in res)
+                {
+                    Console.WriteLine("{0}, {1}", book.Title, book.Author);
+                }
+            }
+
+
+        }
+
+        // return books;
+    }
+
+    internal static string RemoveLast(this string str)
+    {
+        if (str.Length == 0)
+        {
+            return str;
+        }
+        else
+        {
+            return str.Remove(str.Length - 1);
+        }
+    }
+
     internal static IEnumerable<Book> SelectBooks()
     {
         List<Book> books = [];
         while (true)
         {
-            
             int res = ReadMenu(
                 prompt: "Select books:",
                 options: [
@@ -124,6 +202,18 @@ internal class Program
 
             switch (res)
             {
+                case 0:
+                    {
+                        string query = ReadString("");
+                        break;
+                    }
+
+                case 1:
+                    break;
+
+                case 2:
+                    break;
+
                 case 3:
                     return books;
 

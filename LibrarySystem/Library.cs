@@ -26,7 +26,7 @@ internal class Library
     /// <param name="author">The author of the new book.</param>
     /// <param name="publicationDate">The publication date of the new book.</param>
     /// <param name="copies">How many copies of this book should be added to the library.</param>
-    public void AddBook(string title, string author, DateOnly publicationDate, int copies)
+    public void AddBook(string title, string author, DateOnly publicationDate, int copies = 1)
     {
         // Copies of the same book will share an id so they can be identified as copies.
         int bookId = nextBookId++;
@@ -57,7 +57,10 @@ internal class Library
     /// <returns>An enumerable containing a list of matching books.</returns>
     public IEnumerable<Book> SearchByTitle(string title)
     {
-        return Books.Where(b => b.Title.Contains(title));
+        return Books
+            .GroupBy(b => b.BookId)
+            .Select(b => b.First())
+            .Where(b => b.Title.Contains(title, StringComparison.CurrentCultureIgnoreCase));
     }
 
     /// <summary>
@@ -67,7 +70,10 @@ internal class Library
     /// <returns>An enumerable containing a list of matching books.</returns>
     public IEnumerable<Book> SearchByAuthor(string author)
     {
-        return Books.Where(b => b.Author.Contains(author));
+        return Books
+            .GroupBy(b => b.BookId)
+            .Select(b => b.First())
+            .Where(b => b.Author.Contains(author, StringComparison.CurrentCultureIgnoreCase));
     }
 
     /// <summary>
@@ -77,7 +83,11 @@ internal class Library
     /// <returns>An enumerable containing a list of matching books.</returns>
     public IEnumerable<Book> SearchByKeyword(string keyword)
     {
-        return Books.Where(b => b.Title.Contains(keyword) || b.Author.Contains(keyword));
+        return Books
+            .GroupBy(b => b.BookId)
+            .Select(b => b.First())
+            .Where(b => b.Title.Contains(keyword, StringComparison.CurrentCultureIgnoreCase)
+                || b.Author.Contains(keyword, StringComparison.CurrentCultureIgnoreCase));
     }
 
     /// <summary>
@@ -87,7 +97,9 @@ internal class Library
     /// <returns>The matching user, or null if the user was not found.</returns>
     public User? FindUserById(int id)
     {
-        return Users.Where(u => u.UserId == id).FirstOrDefault(defaultValue: null);
+        return Users
+            .Where(u => u.UserId == id)
+            .FirstOrDefault(defaultValue: null);
     }
 
     /// <summary>
@@ -97,7 +109,9 @@ internal class Library
     /// <returns>The matching book, or null if the book was not found.</returns>
     public Book? FindBookById(int id)
     {
-        return Books.Where(b => b.BookId == id).FirstOrDefault(defaultValue: null);
+        return Books
+            .Where(b => b.BookId == id)
+            .FirstOrDefault(defaultValue: null);
     }
 
     /// <summary>

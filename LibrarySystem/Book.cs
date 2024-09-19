@@ -16,7 +16,7 @@ internal class Book(int bookId, string title, string author, DateOnly publicatio
     public DateOnly? DueDate { get; private set; }
 
     /// <summary>
-    /// Returns a bool to state whether the book is available, based on if the UserId is -1.
+    /// Returns whether the book is available, based on if the UserId is -1.
     /// </summary>
     public bool IsAvailable
     {
@@ -31,6 +31,17 @@ internal class Book(int bookId, string title, string author, DateOnly publicatio
     public void AssignUser(int userId, DateOnly dueDate)
     {
         UserId = userId;
+        DueDate = dueDate;
+    }
+
+    /// <summary>
+    /// Assign a User to a Book, will set the Book's UserId and DueDate properties.
+    /// </summary>
+    /// <param name="user">To User to assign the Book to.</param>
+    /// <param name="dueDate">The new due date, when the book should be returned.</param>
+    public void AssignUser(User user, DateOnly dueDate)
+    {
+        UserId = user.UserId;
         DueDate = dueDate;
     }
 
