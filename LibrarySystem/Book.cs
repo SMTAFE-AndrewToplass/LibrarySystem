@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace LibrarySystem;
 
-namespace LibrarySystem;
-
-internal class Book(int bookId, string title, string author, DateOnly publicationDate)
+public class Book(int bookId, string title, string author,
+    DateOnly publicationDate)
 {
     public int BookId { get; } = bookId;
     public string Title { get; } = title;
@@ -24,10 +19,12 @@ internal class Book(int bookId, string title, string author, DateOnly publicatio
     }
 
     /// <summary>
-    /// Assign a User to a Book, will set the Book's UserId and DueDate properties.
+    /// Assign a User to a Book, will set the Book's UserId and DueDate
+    /// properties.
     /// </summary>
     /// <param name="userId">The userId to assign the Book to.</param>
-    /// <param name="dueDate">The new due date, when the book should be returned.</param>
+    /// <param name="dueDate">The new due date, when the book should be
+    /// returned.</param>
     public void AssignUser(int userId, DateOnly dueDate)
     {
         UserId = userId;
@@ -35,10 +32,12 @@ internal class Book(int bookId, string title, string author, DateOnly publicatio
     }
 
     /// <summary>
-    /// Assign a User to a Book, will set the Book's UserId and DueDate properties.
+    /// Assign a User to a Book, will set the Book's UserId and DueDate
+    /// properties.
     /// </summary>
     /// <param name="user">To User to assign the Book to.</param>
-    /// <param name="dueDate">The new due date, when the book should be returned.</param>
+    /// <param name="dueDate">The new due date, when the book should be
+    /// returned.</param>
     public void AssignUser(User user, DateOnly dueDate)
     {
         UserId = user.UserId;
@@ -46,7 +45,8 @@ internal class Book(int bookId, string title, string author, DateOnly publicatio
     }
 
     /// <summary>
-    /// Removes the User information from this book, should be called when returning Book.
+    /// Removes the User information from this book, should be called when
+    /// returning Book.
     /// </summary>
     public void RemoveUser()
     {

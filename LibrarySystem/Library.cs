@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace LibrarySystem;
 
-namespace LibrarySystem;
-
-internal class Library
+public class Library
 {
     /// <summary>
     /// How much in fees are applied per day that a Book is late.
@@ -15,6 +9,11 @@ internal class Library
 
     public List<Book> Books { get; } = [];
     public List<User> Users { get; } = [];
+    public List<Book> Copies
+    {
+        get => [.. Books.GroupBy(b => b.BookId)
+            .Select(b => b.First())];
+    }
 
     private int nextBookId = 0;
     private int nextUserId = 0;
@@ -24,11 +23,15 @@ internal class Library
     /// </summary>
     /// <param name="title">The title of the new book.</param>
     /// <param name="author">The author of the new book.</param>
-    /// <param name="publicationDate">The publication date of the new book.</param>
-    /// <param name="copies">How many copies of this book should be added to the library.</param>
-    public void AddBook(string title, string author, DateOnly publicationDate, int copies = 1)
+    /// <param name="publicationDate">The publication date of the new
+    /// book.</param>
+    /// <param name="copies">How many copies of this book should be added to the
+    /// library.</param>
+    public void AddBook(string title, string author, DateOnly publicationDate,
+        int copies = 1)
     {
-        // Copies of the same book will share an id so they can be identified as copies.
+        // Copies of the same book will share an id so they can be identified as
+        // copies.
         int bookId = nextBookId++;
         for (int i = 0; i < copies; i++)
         {
@@ -60,7 +63,8 @@ internal class Library
         return Books
             .GroupBy(b => b.BookId)
             .Select(b => b.First())
-            .Where(b => b.Title.Contains(title, StringComparison.CurrentCultureIgnoreCase));
+            .Where(b => b.Title.Contains(title,
+                StringComparison.CurrentCultureIgnoreCase));
     }
 
     /// <summary>
@@ -73,7 +77,8 @@ internal class Library
         return Books
             .GroupBy(b => b.BookId)
             .Select(b => b.First())
-            .Where(b => b.Author.Contains(author, StringComparison.CurrentCultureIgnoreCase));
+            .Where(b => b.Author.Contains(author,
+                StringComparison.CurrentCultureIgnoreCase));
     }
 
     /// <summary>
@@ -81,14 +86,25 @@ internal class Library
     /// </summary>
     /// <param name="keyword">Keyword to search for.</param>
     /// <returns>An enumerable containing a list of matching books.</returns>
-    public IEnumerable<Book> SearchByKeyword(string keyword)
+    public IEnumerable<Book> SearchByKeyword(string keywords)
     {
         return Books
             .GroupBy(b => b.BookId)
             .Select(b => b.First())
-            .Where(b => b.Title.Contains(keyword, StringComparison.CurrentCultureIgnoreCase)
-                || b.Author.Contains(keyword, StringComparison.CurrentCultureIgnoreCase));
+            .Where(b => Utils.FuzzySearch($"{b.Title}, {b.Author}", keywords))
+            .OrderBy(b => -Utils.FuzzySearchRating($"{b.Title}, {b.Author}", keywords));
     }
+
+    // public IEnumerable<Book> SearchByKeyword(string keyword)
+    // {
+    //     return Books
+    //         .GroupBy(b => b.BookId)
+    //         .Select(b => b.First())
+    //         .Where(b => b.Title.Contains(keyword,
+    //             StringComparison.CurrentCultureIgnoreCase)
+    //             || b.Author.Contains(keyword,
+    //                 StringComparison.CurrentCultureIgnoreCase));
+    // }
 
     /// <summary>
     /// Find a User from their UserId number.
@@ -118,7 +134,8 @@ internal class Library
     /// Get all available copies of a book.
     /// </summary>
     /// <param name="bookId">The id of the book to find copies of.</param>
-    /// <returns>An enumerable containing available copies of the same title.</returns>
+    /// <returns>An enumerable containing available copies of the same
+    /// title.</returns>
     public IEnumerable<Book> GetAvailableCopies(int bookId)
     {
         return Books.Where(b => b.BookId == bookId && b.IsAvailable);
@@ -128,7 +145,8 @@ internal class Library
     /// Get all available copies of a book.
     /// </summary>
     /// <param name="book">The book to find other available copies of.</param>
-    /// <returns>An enumerable containing available copies of the same title.</returns>
+    /// <returns>An enumerable containing available copies of the same
+    /// title.</returns>
     public IEnumerable<Book> GetAvailableCopies(Book book)
     {
         return GetAvailableCopies(book.BookId);
@@ -137,8 +155,10 @@ internal class Library
     /// <summary>
     /// Get the number of available copies of a book.
     /// </summary>
-    /// <param name="bookId">The id of the book to find number of copies.</param>
-    /// <returns>The number of available copies of the book for borrowing.</returns>
+    /// <param name="bookId">The id of the book to find number of
+    /// copies.</param>
+    /// <returns>The number of available copies of the book for
+    /// borrowing.</returns>
     public int GetNumberOfAvailableCopies(int bookId)
     {
         return GetAvailableCopies(bookId).Count();
@@ -148,7 +168,8 @@ internal class Library
     /// Get the number of available copies of a book.
     /// </summary>
     /// <param name="book">The book to find number of copies.</param>
-    /// <returns>The number of available copies of the book for borrowing.</returns>
+    /// <returns>The number of available copies of the book for
+    /// borrowing.</returns>
     public int GetNumberOfAvailableCopies(Book book)
     {
         return GetAvailableCopies(book).Count();
@@ -157,12 +178,18 @@ internal class Library
     /// <summary>
     /// Get a list of all books that are currently borrowed.
     /// </summary>
-    /// <returns>An enumerable containing every book in the library that is currently borrowed.</returns>
-    public IEnumerable<Book> GetBorrowedBooks() => Books.Where(b => !b.IsAvailable);
+    /// <returns>An enumerable containing every book in the library that is
+    /// currently borrowed.</returns>
+    public IEnumerable<Book> GetBorrowedBooks() =>
+        Books.Where(b => !b.IsAvailable);
 
     /// <summary>
     /// Get a list of all user who are currently borrowing books.
     /// </summary>
-    /// <returns>An enumerable containing all users who are currently borrowing books.</returns>
-    public IEnumerable<User> GetBorrowingUsers() => Users.Where(u => u.Books.Count > 0);
+    /// <returns>An enumerable containing all users who are currently borrowing
+    /// books.</returns>
+    public IEnumerable<User> GetBorrowingUsers() =>
+        Users.Where(u => u.Books.Count > 0);
+
+
 }
