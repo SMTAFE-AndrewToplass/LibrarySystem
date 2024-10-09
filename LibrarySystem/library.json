@@ -23,8 +23,8 @@
       "title": "1984",
       "author": "George Orwell",
       "publication-date": "1949-01-01",
-      "user-id": -1,
-      "due-date": null,
+      "user-id": 6,
+      "due-date": "2024-10-15",
       "unique-id": 3
     },
     {
@@ -149,8 +149,8 @@
       "title": "The Shining",
       "author": "Stephen King",
       "publication-date": "1977-01-01",
-      "user-id": -1,
-      "due-date": null,
+      "user-id": 6,
+      "due-date": "2024-10-15",
       "unique-id": 17
     },
     {
@@ -176,8 +176,8 @@
       "title": "The Hobbit",
       "author": "J.R.R. Tolkien",
       "publication-date": "1937-01-01",
-      "user-id": -1,
-      "due-date": null,
+      "user-id": 6,
+      "due-date": "2024-10-15",
       "unique-id": 20
     },
     {
@@ -236,7 +236,7 @@
       "user-id": 4,
       "name": "David Hernandez",
       "email": "david.hernandez@example.com",
-      "fees-owed": 0,
+      "fees-owed": 10.78,
       "unique-book-ids": []
     },
     {
@@ -245,9 +245,20 @@
       "email": "olivia.nguyen@example.com",
       "fees-owed": 0,
       "unique-book-ids": []
+    },
+    {
+      "user-id": 6,
+      "name": "Andrew Toplass",
+      "email": "ajtoplass0@gmail.com",
+      "fees-owed": 0,
+      "unique-book-ids": [
+        3,
+        20,
+        17
+      ]
     }
   ],
   "next-book-id": 13,
-  "next-user-id": 6,
+  "next-user-id": 7,
   "next-unique-book-id": 24
 }

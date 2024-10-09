@@ -21,36 +21,36 @@ internal static class Program
             LoadLibrary();
         }
 
-        InteractiveSearch(library.SearchByKeyword);
+        while (true)
+        {
+            int res = ReadMenu(
+                prompt: "Welcome to the Library system.",
+                options: [
+                    "Create new user account",
+                    "Login as user account",
+                    "Login as admin user",
+                    "Exit program"
+                ]
+            );
 
-        // while (true)
-        // {
-        //     int res = ReadMenu(
-        //         prompt: "Welcome to the Library system.",
-        //         options: [
-        //             "Create new user account",
-        //             "Login as user account",
-        //             "Login as admin user",
-        //             "Exit program"
-        //         ]
-        //     );
-
-        //     switch (res)
-        //     {
-        //         case 0:
-        //             CreateUser();
-        //             break;
-        //         case 1:
-        //             SelectUser();
-        //             break;
-        //         case 2:
-        //             AdminAccount();
-        //             break;
-        //         case 3:
-        //             return;
-        //     }
-        // }
-
+            switch (res)
+            {
+                case 0:
+                    CreateUser();
+                    break;
+                case 1:
+                    SelectUser();
+                    break;
+                case 2:
+                    AdminAccount();
+                    break;
+                case 3:
+                    goto ExitProgram;
+                default:
+                    goto ExitProgram;
+            }
+        }
+    ExitProgram:
         SaveLibrary();
     }
 
@@ -98,31 +98,25 @@ internal static class Program
 
     internal static void SelectUser()
     {
-        Console.Clear();
-        Console.WriteLine("Please select from the list of users:");
-        foreach (var user in library.Users)
-        {
-            Console.WriteLine($"{user.UserId}, {user.Name} ({user.Email})");
-        }
-        int result = ReadInt();
-        User? currentUser = library.FindUserById(result);
+        User[] users = [.. library.Users];
+        User? currentUser = ReadMenu("Please select from the list of users:",
+            users, u => $"{u.UserId}, {u.Name} ({u.Email})");
+
         if (currentUser is not null)
-        {
             UserAccount(currentUser);
-        }
     }
 
     internal static void UserAccount(User user)
     {
-        Console.WriteLine($"Welcome, {user.Name}");
         while (true)
         {
             int res = ReadMenu(
-                prompt: "What would you like to do today:",
-                options: [
+                $"Welcome, {user.Name}\nWhat would you like to do today?\n",
+                [
                     "View my borrowed books",
                     "Borrow some new books",
                     "Return borrowed books",
+                    "Make a payment",
                     "Logout"
                 ]
             );
@@ -135,29 +129,64 @@ internal static class Program
                         IEnumerable<Book> books = user.Books
                             .OrderBy(b => b.Author)
                             .ThenBy(b => b.Title);
-                        foreach (Book book in books)
+
+                        string prompt = "";
+
+                        if (books.Any())
                         {
-                            // Print each book's information.
-                            Console.WriteLine(
-                                $"{book.BookId}: {book.Author}, {book.Title}");
+                            prompt = "You are currently borrowing the following books:\n";
+                            foreach (Book book in books)
+                            {
+                                prompt += $" - Due {book.DueDate}, {book.Title}, {book.Author}\n";
+                            }
                         }
+                        else
+                        {
+                            prompt = "You are not currently borrowing any books.\n";
+                        }
+
+                        Prompt(prompt);
                         break;
                     }
 
                 case 1:
                     {
-                        IEnumerable<Book> books = SelectBooks();
+                        IEnumerable<Book> books = InteractiveSearch();
+                        if (books.Any())
+                        {
+                            try
+                            {
+                                user.BorrowBooks(books);
+                                Prompt("Books borrowed successfully.");
+                            }
+                            catch (Exception e)
+                            {
+                                Prompt(
+                                    "You are unable to borrow these books."
+                                        + $"\nError: {e.Message} \n");
+                            }
+                        }
                         break;
                     }
 
+                case 2:
+                    {
+                        break;
+                    }
+
+                case 3:
+                    return;
+
                 case 4:
+                    return;
+
+                default:
                     return;
             }
         }
     }
 
-    internal static IEnumerable<Book> InteractiveSearch(
-        Func<string, IEnumerable<Book>> searchMethod)
+    internal static IEnumerable<Book> InteractiveSearch()
     {
         Console.Clear();
         Console.WriteLine("Enter some characters to begin searching.");
@@ -191,7 +220,7 @@ internal static class Program
 
             if (query.Length > 0)
             {
-                results = [.. searchMethod(query)];
+                results = [.. library.SearchByKeyword(query)];
                 for (int i = scroll; i < results.Count && i < offsetBtm; i++)
                 {
                     Book book = results[i];
@@ -202,7 +231,7 @@ internal static class Program
                     if (selected == i)
                         Console.BackgroundColor = ConsoleColor.DarkGray;
 
-                    Console.Write(selection.Contains(book) ? "[x] " : "[ ] ");
+                    Console.Write(selection.Contains(book) ? " [x] " : " [ ] ");
                     WriteHighlighted(bookInfo, indices);
                     Utils.ResetBackground();
                 }
@@ -217,7 +246,7 @@ internal static class Program
                     if (selected == i)
                         Console.BackgroundColor = ConsoleColor.DarkGray;
 
-                    Console.Write(selection.Contains(book) ? "[x] " : "[ ] ");
+                    Console.Write(selection.Contains(book) ? " [x] " : " [ ] ");
                     Console.WriteLine(bookInfo);
                     Utils.ResetBackground();
                 }
@@ -352,10 +381,10 @@ internal static class Program
         }
 
 
-        int result = ReadMenu([
+        int result = ReadMenu(prompt, [
             "Continue",
             "Back to search"
-        ], prompt, true);
+        ]);
 
         switch (result)
         {
@@ -413,22 +442,6 @@ internal static class Program
                 i = value.Length;
             }
         }
-
-        // int i = 0;
-        // for (; i < indices.Length - 1; i += 1)
-        // {
-        //     SearchIndex index = indices[i];
-        //     SearchIndex next = indices[i + 1];
-        //     if (i == 0)
-        //     {
-        //         Console.Write(value[..index.Start]);
-        //     }
-        //     highlight(value[index.Start..index.End]);
-        //     Console.Write(value[index.End..next.Start]);
-        // }
-        // SearchIndex last = indices[i];
-        // highlight(value[last.Start..last.End]);
-        // Console.WriteLine(value[last.End..^0]);
     }
 
     internal static IEnumerable<Book> SelectBooks()
@@ -514,33 +527,96 @@ internal static class Program
         }
     }
 
-    internal static int ReadMenu(string[] options, string? prompt = null,
-        bool clear = false)
+    internal static T? ReadMenu<T>(string prompt, T[] values, Func<T, string> convert) where T : class
     {
-        if (clear)
-            Console.Clear();
+        string[] options = [.. values.Select(convert)];
+        int result = ReadMenu(prompt, options);
+        if (result >= 0 && result < values.Length)
+            return values[result];
+        else
+            return null;
+    }
+
+    internal static void Prompt(string prompt) => ReadMenu(prompt, ["OK"]);
+
+    internal static int ReadMenu(string prompt, string[] options)
+    {
+        int promptHeight = prompt.Split('\n').Length;
+        Console.Clear();
+        int selected = -1;
+        int scroll = 0;
+
         while (true)
         {
-            // Print prompt.
-            if (!string.IsNullOrEmpty(prompt))
-            {
-                Console.WriteLine(prompt);
-            }
-            for (int i = 0; i < options.Length; i++)
-            {
-                Console.WriteLine($"{i + 1}: {options[i]}");
-            }
-            Console.Write($"Enter option (1-{options.Length}): ");
+            int maxHeight = Console.WindowHeight - 1 - promptHeight;
+            int offsetBtm = scroll + maxHeight;
 
-            bool inputSuccess = int.TryParse(Console.ReadLine(), out int opt);
-            if (inputSuccess && opt > 0 && opt <= options.Length)
+            Console.Clear();
+            Console.Write($"{prompt}\n");
+            Utils.ResetForeground();
+
             {
-                return opt - 1;
+                for (int i = scroll; i < options.Length && i < offsetBtm; i++)
+                {
+                    if (selected == i)
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+
+                    Console.WriteLine($" {i + 1}) {options[i]}");
+
+                    Utils.ResetBackground();
+                }
             }
-            else
+
+            ConsoleKeyInfo key = Console.ReadKey(true);
+
+            // Input processing.
+            switch (key.Key)
             {
-                Console.Clear();
-                Console.WriteLine("Invalid input, please try again.\n");
+                // Cancel prompt.
+                case ConsoleKey.Escape:
+                    return -1;
+
+                case ConsoleKey.Enter:
+                    if (selected >= 0 && selected < options.Length)
+                        return selected;
+                    break;
+
+                case ConsoleKey.UpArrow:
+                    if (selected > 0)
+                        selected--;
+                    if (scroll > 0 && (selected - 1 < offsetBtm - maxHeight))
+                        scroll--;
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    if (selected < options.Length - 1)
+                        selected++;
+                    if ((scroll < options.Length) && (selected + 2 > offsetBtm))
+                        scroll++;
+                    break;
+
+                // Go to first option.
+                case ConsoleKey.Home:
+                    selected = 0;
+                    scroll = 0;
+                    break;
+
+                // Go to end last option.
+                case ConsoleKey.End:
+                    selected = options.Length - 1;
+                    scroll = Math.Max(options.Length - maxHeight + 1, 0);
+                    break;
+
+                default:
+                    // If user presses a digit key, then use that as a shortcut
+                    // for an option.
+                    if (char.IsDigit(key.KeyChar))
+                    {
+                        scroll = 0;
+                        int idx = int.Parse(key.KeyChar.ToString());
+                        selected = idx - 1;
+                    }
+                    break;
             }
         }
     }
