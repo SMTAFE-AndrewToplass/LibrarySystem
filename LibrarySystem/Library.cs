@@ -17,6 +17,7 @@ public class Library
 
     private int nextBookId = 0;
     private int nextUserId = 0;
+    private int nextUniqueBookId = 0;
 
     /// <summary>
     /// Adds a book title to the library.
@@ -35,7 +36,7 @@ public class Library
         int bookId = nextBookId++;
         for (int i = 0; i < copies; i++)
         {
-            Book book = new(bookId, title, author, publicationDate);
+            Book book = new(nextUniqueBookId++, bookId, title, author, publicationDate);
             Books.Add(book);
         }
     }

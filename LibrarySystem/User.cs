@@ -1,4 +1,4 @@
-namespace LibrarySystem;
+﻿namespace LibrarySystem;
 
 public class User(int userId, string name, string email, double feesOwed = 0)
 {
@@ -17,6 +17,8 @@ public class User(int userId, string name, string email, double feesOwed = 0)
     public string Email { get; } = email;
     public List<Book> Books { get; } = [];
     public double FeesOwed { get; private set; } = feesOwed;
+
+    public List<int> BookIds { get; } = [];
 
     /// <summary>
     /// Borrow a list of Books, up to User.maxNumberOfBooks at a time.
@@ -63,6 +65,7 @@ public class User(int userId, string name, string email, double feesOwed = 0)
                 // User's Book list.
                 book.AssignUser(UserId, dueDate);
                 Books.Add(book);
+                BookIds.Add(book.UniqueId);
             }
             else
             {
@@ -97,6 +100,7 @@ public class User(int userId, string name, string email, double feesOwed = 0)
                 // Book list.
                 book.RemoveUser();
                 Books.Remove(book);
+                BookIds.Remove(book.UniqueId);
             }
         }
     }

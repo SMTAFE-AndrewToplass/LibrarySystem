@@ -1,6 +1,6 @@
 ﻿namespace LibrarySystem;
 
-public class Book(int bookId, string title, string author,
+public class Book(int uniqueId, int bookId, string title, string author,
     DateOnly publicationDate)
 {
     public int BookId { get; } = bookId;
@@ -9,6 +9,7 @@ public class Book(int bookId, string title, string author,
     public DateOnly PublicationDate { get; } = publicationDate;
     public int UserId { get; private set; }
     public DateOnly? DueDate { get; private set; }
+    public int UniqueId { get; } = uniqueId;
 
     /// <summary>
     /// Returns whether the book is available, based on if the UserId is -1.
