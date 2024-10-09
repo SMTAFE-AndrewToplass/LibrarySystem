@@ -11,7 +11,7 @@ public static class Utils
     public static bool EqualsInsensitive(this char a, char b) =>
         char.ToLower(a) == char.ToLower(b);
 
-    public static bool FuzzySearch(string search, string query)
+    public static bool FuzzySearchContains(string search, string query)
     {
         string q = query.Replace(" ", null);
 
@@ -68,7 +68,7 @@ public static class Utils
         return [.. indices];
     }
 
-    public static int FuzzySearchRating(string search, string query)
+    public static int FuzzySearchOrder(string search, string query)
     {
         int matches = 0;
         string q = query.Replace(" ", null);

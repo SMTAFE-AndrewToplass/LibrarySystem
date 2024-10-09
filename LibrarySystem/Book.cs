@@ -1,23 +1,24 @@
-﻿namespace LibrarySystem;
+﻿using System.Text.Json.Serialization;
+
+namespace LibrarySystem;
 
 public class Book(int uniqueId, int bookId, string title, string author,
     DateOnly publicationDate)
 {
-    public int BookId { get; } = bookId;
-    public string Title { get; } = title;
-    public string Author { get; } = author;
-    public DateOnly PublicationDate { get; } = publicationDate;
-    public int UserId { get; private set; }
-    public DateOnly? DueDate { get; private set; }
-    public int UniqueId { get; } = uniqueId;
+    public int BookId { get; init; } = bookId;
+    public string Title { get; init; } = title;
+    public string Author { get; init; } = author;
+    public DateOnly PublicationDate { get; init; } = publicationDate;
+
+    [JsonInclude] public int UserId { get; private set; } = -1;
+
+    [JsonInclude] public DateOnly? DueDate { get; private set; } = null;
+    public int UniqueId { get; init; } = uniqueId;
 
     /// <summary>
     /// Returns whether the book is available, based on if the UserId is -1.
     /// </summary>
-    public bool IsAvailable
-    {
-        get => UserId == -1;
-    }
+    [JsonIgnore] public bool IsAvailable { get => UserId == -1; }
 
     /// <summary>
     /// Assign a User to a Book, will set the Book's UserId and DueDate

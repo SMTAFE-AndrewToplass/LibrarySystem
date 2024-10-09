@@ -1,4 +1,6 @@
-﻿namespace LibrarySystem;
+﻿using System.Text.Json.Serialization;
+
+namespace LibrarySystem;
 
 public class Library
 {
@@ -7,17 +9,19 @@ public class Library
     /// </summary>
     public const double LateFeePerDay = 1.0;
 
-    public List<Book> Books { get; } = [];
-    public List<User> Users { get; } = [];
+    public List<Book> Books { get; init; } = [];
+    public List<User> Users { get; init; } = [];
+
+    [JsonIgnore]
     public List<Book> Copies
     {
         get => [.. Books.GroupBy(b => b.BookId)
             .Select(b => b.First())];
     }
 
-    private int nextBookId = 0;
-    private int nextUserId = 0;
-    private int nextUniqueBookId = 0;
+    [JsonInclude] private int nextBookId = 1;
+    [JsonInclude] private int nextUserId = 1;
+    [JsonInclude] private int nextUniqueBookId = 1;
 
     /// <summary>
     /// Adds a book title to the library.
@@ -36,7 +40,8 @@ public class Library
         int bookId = nextBookId++;
         for (int i = 0; i < copies; i++)
         {
-            Book book = new(nextUniqueBookId++, bookId, title, author, publicationDate);
+            Book book = new(nextUniqueBookId++, bookId, title, author,
+                publicationDate);
             Books.Add(book);
         }
     }
@@ -83,7 +88,8 @@ public class Library
     }
 
     /// <summary>
-    /// Search for a book by keyword, will search both its title or author.
+    /// Search for a book by keyword, will search both its title or author. Will
+    /// match based on character order rather than full words.
     /// </summary>
     /// <param name="keyword">Keyword to search for.</param>
     /// <returns>An enumerable containing a list of matching books.</returns>
@@ -92,8 +98,10 @@ public class Library
         return Books
             .GroupBy(b => b.BookId)
             .Select(b => b.First())
-            .Where(b => Utils.FuzzySearch($"{b.Title}, {b.Author}", keywords))
-            .OrderBy(b => -Utils.FuzzySearchRating($"{b.Title}, {b.Author}", keywords));
+            .Where(b =>
+                Utils.FuzzySearchContains($"{b.Title}, {b.Author}", keywords))
+            .OrderByDescending(b =>
+                Utils.FuzzySearchOrder($"{b.Title}, {b.Author}", keywords));
     }
 
     // public IEnumerable<Book> SearchByKeyword(string keyword)
@@ -128,6 +136,18 @@ public class Library
     {
         return Books
             .Where(b => b.BookId == id)
+            .FirstOrDefault(defaultValue: null);
+    }
+
+    /// <summary>
+    /// Find a Book from its UniqueId number.
+    /// </summary>
+    /// <param name="id">The UniqueId to find the book.</param>
+    /// <returns>The matching book, or null if the book was not found.</returns>
+    public Book? FindBookByUnqiueId(int id)
+    {
+        return Books
+            .Where(b => b.UniqueId == id)
             .FirstOrDefault(defaultValue: null);
     }
 

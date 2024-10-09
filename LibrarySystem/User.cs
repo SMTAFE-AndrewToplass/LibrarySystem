@@ -1,34 +1,36 @@
-﻿namespace LibrarySystem;
+﻿using System.Text.Json.Serialization;
+
+namespace LibrarySystem;
 
 public class User(int userId, string name, string email, double feesOwed = 0)
 {
     /// <summary>
     /// How many books can a User borrow at once.
     /// </summary>
-    public virtual int MaxNumberOfBooks { get => 3; }
+    [JsonIgnore] public virtual int MaxNumberOfBooks { get => 3; }
 
     /// <summary>
     /// How many days a Book can be borrowed for before late fees.
     /// </summary>
-    public virtual int BorrowDays { get => 5; }
+    [JsonIgnore] public virtual int BorrowDays { get => 5; }
 
-    public int UserId { get; } = userId;
-    public string Name { get; } = name;
-    public string Email { get; } = email;
-    public List<Book> Books { get; } = [];
-    public double FeesOwed { get; private set; } = feesOwed;
+    public int UserId { get; init; } = userId;
+    public string Name { get; init; } = name;
+    public string Email { get; init; } = email;
+    [JsonIgnore] public List<Book> Books { get; init; } = [];
+    [JsonInclude] public double FeesOwed { get; private set; } = feesOwed;
 
-    public List<int> BookIds { get; } = [];
+    public List<int> UniqueBookIds { get; init; } = [];
 
     /// <summary>
-    /// Borrow a list of Books, up to User.maxNumberOfBooks at a time.
+    /// Borrow a list of Books, up to User.MaxNumberOfBooks at a time.
     /// </summary>
     /// <param name="books">A list of Books to borrow.</param>
     /// <exception cref="Exception">Thrown if User did not return their Books or
     /// did not pay their fees before borrowing again.</exception>
     /// <exception cref="ArgumentException">Thrown if there are too many Books
     /// at once or a Book is not available.</exception>
-    public void BorrowBooks(IEnumerable<Book> books)
+    public void BorrowBooks(params Book[] books)
     {
         if (FeesOwed > 0.0)
         {
@@ -46,7 +48,7 @@ public class User(int userId, string name, string email, double feesOwed = 0)
 
         // Get todays date to calculate new due date.
         DateOnly today = DateOnly.FromDateTime(DateTime.Today);
-        if (books.Count() > MaxNumberOfBooks)
+        if (books.Length > MaxNumberOfBooks)
         {
             throw new ArgumentException(
                 $"You can only borrow {MaxNumberOfBooks} book(s) at a time.");
@@ -65,7 +67,7 @@ public class User(int userId, string name, string email, double feesOwed = 0)
                 // User's Book list.
                 book.AssignUser(UserId, dueDate);
                 Books.Add(book);
-                BookIds.Add(book.UniqueId);
+                UniqueBookIds.Add(book.UniqueId);
             }
             else
             {
@@ -74,6 +76,16 @@ public class User(int userId, string name, string email, double feesOwed = 0)
             }
         }
     }
+
+    /// <summary>
+    /// Borrow a list of Books, up to User.MaxNumberOfBooks at a time.
+    /// </summary>
+    /// <param name="books">A list of Books to borrow.</param>
+    /// <exception cref="Exception">Thrown if User did not return their Books or
+    /// did not pay their fees before borrowing again.</exception>
+    /// <exception cref="ArgumentException">Thrown if there are too many Books
+    /// at once or a Book is not available.</exception>
+    public void BorrowBooks(IEnumerable<Book> books) => BorrowBooks([.. books]);
 
     /// <summary>
     /// Return all books the user is currently borrowing.
@@ -100,7 +112,7 @@ public class User(int userId, string name, string email, double feesOwed = 0)
                 // Book list.
                 book.RemoveUser();
                 Books.Remove(book);
-                BookIds.Remove(book.UniqueId);
+                UniqueBookIds.Remove(book.UniqueId);
             }
         }
     }

@@ -1,0 +1,263 @@
+{
+  "books": [
+    {
+      "book-id": 1,
+      "title": "The Great Gatsby",
+      "author": "F. Scott Fitzgerald",
+      "publication-date": "1925-01-01",
+      "user-id": 1,
+      "due-date": "2024-10-14",
+      "unique-id": 1
+    },
+    {
+      "book-id": 2,
+      "title": "To Kill a Mockingbird",
+      "author": "Harper Lee",
+      "publication-date": "1960-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 2
+    },
+    {
+      "book-id": 3,
+      "title": "1984",
+      "author": "George Orwell",
+      "publication-date": "1949-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 3
+    },
+    {
+      "book-id": 4,
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "publication-date": "1813-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 4
+    },
+    {
+      "book-id": 5,
+      "title": "The Catcher in the Rye",
+      "author": "J.D. Salinger",
+      "publication-date": "1951-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 5
+    },
+    {
+      "book-id": 6,
+      "title": "The Lord of the Rings",
+      "author": "J.R.R. Tolkien",
+      "publication-date": "1954-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 6
+    },
+    {
+      "book-id": 6,
+      "title": "The Lord of the Rings",
+      "author": "J.R.R. Tolkien",
+      "publication-date": "1954-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 7
+    },
+    {
+      "book-id": 6,
+      "title": "The Lord of the Rings",
+      "author": "J.R.R. Tolkien",
+      "publication-date": "1954-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 8
+    },
+    {
+      "book-id": 7,
+      "title": "The Kite Runner",
+      "author": "Khaled Hosseini",
+      "publication-date": "2003-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 9
+    },
+    {
+      "book-id": 8,
+      "title": "The Hunger Games",
+      "author": "Suzanne Collins",
+      "publication-date": "2008-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 10
+    },
+    {
+      "book-id": 8,
+      "title": "The Hunger Games",
+      "author": "Suzanne Collins",
+      "publication-date": "2008-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 11
+    },
+    {
+      "book-id": 8,
+      "title": "The Hunger Games",
+      "author": "Suzanne Collins",
+      "publication-date": "2008-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 12
+    },
+    {
+      "book-id": 8,
+      "title": "The Hunger Games",
+      "author": "Suzanne Collins",
+      "publication-date": "2008-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 13
+    },
+    {
+      "book-id": 9,
+      "title": "The Da Vinci Code",
+      "author": "Dan Brown",
+      "publication-date": "2003-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 14
+    },
+    {
+      "book-id": 9,
+      "title": "The Da Vinci Code",
+      "author": "Dan Brown",
+      "publication-date": "2003-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 15
+    },
+    {
+      "book-id": 10,
+      "title": "Gone with the Wind",
+      "author": "Margaret Mitchell",
+      "publication-date": "1936-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 16
+    },
+    {
+      "book-id": 11,
+      "title": "The Shining",
+      "author": "Stephen King",
+      "publication-date": "1977-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 17
+    },
+    {
+      "book-id": 11,
+      "title": "The Shining",
+      "author": "Stephen King",
+      "publication-date": "1977-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 18
+    },
+    {
+      "book-id": 11,
+      "title": "The Shining",
+      "author": "Stephen King",
+      "publication-date": "1977-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 19
+    },
+    {
+      "book-id": 12,
+      "title": "The Hobbit",
+      "author": "J.R.R. Tolkien",
+      "publication-date": "1937-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 20
+    },
+    {
+      "book-id": 12,
+      "title": "The Hobbit",
+      "author": "J.R.R. Tolkien",
+      "publication-date": "1937-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 21
+    },
+    {
+      "book-id": 12,
+      "title": "The Hobbit",
+      "author": "J.R.R. Tolkien",
+      "publication-date": "1937-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 22
+    },
+    {
+      "book-id": 12,
+      "title": "The Hobbit",
+      "author": "J.R.R. Tolkien",
+      "publication-date": "1937-01-01",
+      "user-id": -1,
+      "due-date": null,
+      "unique-id": 23
+    }
+  ],
+  "users": [
+    {
+      "max-number-of-books": 3,
+      "borrow-days": 5,
+      "user-id": 1,
+      "name": "Emily Johnson",
+      "email": "emily.johnson@example.com",
+      "fees-owed": 0,
+      "unique-book-ids": [
+        1
+      ]
+    },
+    {
+      "max-number-of-books": 3,
+      "borrow-days": 5,
+      "user-id": 2,
+      "name": "Michael Lee",
+      "email": "michael.lee@example.com",
+      "fees-owed": 0,
+      "unique-book-ids": []
+    },
+    {
+      "max-number-of-books": 3,
+      "borrow-days": 5,
+      "user-id": 3,
+      "name": "Sophia Patel",
+      "email": "sophia.patel@example.com",
+      "fees-owed": 0,
+      "unique-book-ids": []
+    },
+    {
+      "max-number-of-books": 3,
+      "borrow-days": 5,
+      "user-id": 4,
+      "name": "David Hernandez",
+      "email": "david.hernandez@example.com",
+      "fees-owed": 0,
+      "unique-book-ids": []
+    },
+    {
+      "max-number-of-books": 3,
+      "borrow-days": 5,
+      "user-id": 5,
+      "name": "Olivia Nguyen",
+      "email": "olivia.nguyen@example.com",
+      "fees-owed": 0,
+      "unique-book-ids": []
+    }
+  ],
+  "next-book-id": 13,
+  "next-user-id": 6,
+  "next-unique-book-id": 24
+}
