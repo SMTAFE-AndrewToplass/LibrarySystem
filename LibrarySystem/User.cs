@@ -1,16 +1,16 @@
-﻿namespace LibrarySystem;
+namespace LibrarySystem;
 
 public class User(int userId, string name, string email, double feesOwed = 0)
 {
     /// <summary>
     /// How many books can a User borrow at once.
     /// </summary>
-    public const int MaxNumberOfBooks = 3;
+    public virtual int MaxNumberOfBooks { get => 3; }
 
     /// <summary>
     /// How many days a Book can be borrowed for before late fees.
     /// </summary>
-    public const int BorrowDays = 5;
+    public virtual int BorrowDays { get => 5; }
 
     public int UserId { get; } = userId;
     public string Name { get; } = name;
@@ -111,16 +111,16 @@ public class User(int userId, string name, string email, double feesOwed = 0)
     }
 }
 
-//internal class VIPUser(int userId, string name, string email, double feesOwed
-//= 0) : User(userId, name, email, feesOwed)
-//{
+// internal class VIPUser(int userId, string name, string email,
+//     double feesOwed = 0) : User(userId, name, email, feesOwed)
+// {
 //    /// <summary>
 //    /// How many books can a User borrow at once.
 //    /// </summary>
-//    public new const int MaxNumberOfBooks = 5;
+//    public override int MaxNumberOfBooks { get => 5; }
 
 //    /// <summary>
 //    /// How many days a Book can be borrowed for before late fees.
 //    /// </summary>
-//    public new const int BorrowDays = 10;
-//}
+//    public override int BorrowDays { get => 10; }
+// }
