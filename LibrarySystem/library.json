@@ -210,8 +210,6 @@
   ],
   "users": [
     {
-      "max-number-of-books": 3,
-      "borrow-days": 5,
       "user-id": 1,
       "name": "Emily Johnson",
       "email": "emily.johnson@example.com",
@@ -221,8 +219,6 @@
       ]
     },
     {
-      "max-number-of-books": 3,
-      "borrow-days": 5,
       "user-id": 2,
       "name": "Michael Lee",
       "email": "michael.lee@example.com",
@@ -230,8 +226,6 @@
       "unique-book-ids": []
     },
     {
-      "max-number-of-books": 3,
-      "borrow-days": 5,
       "user-id": 3,
       "name": "Sophia Patel",
       "email": "sophia.patel@example.com",
@@ -239,8 +233,6 @@
       "unique-book-ids": []
     },
     {
-      "max-number-of-books": 3,
-      "borrow-days": 5,
       "user-id": 4,
       "name": "David Hernandez",
       "email": "david.hernandez@example.com",
@@ -248,8 +240,6 @@
       "unique-book-ids": []
     },
     {
-      "max-number-of-books": 3,
-      "borrow-days": 5,
       "user-id": 5,
       "name": "Olivia Nguyen",
       "email": "olivia.nguyen@example.com",
