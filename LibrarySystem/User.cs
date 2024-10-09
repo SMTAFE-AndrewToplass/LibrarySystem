@@ -36,14 +36,16 @@ public class User(int userId, string name, string email, double feesOwed = 0)
         {
             // User must pay any fees they owe before borrwing again.
             throw new Exception(
-                $"User {Name} must pay their late fees before borrowing again.");
+                $"User {Name} must pay their late fees before borrowing "
+                    + "again.");
         }
 
         if (Books.Count > 0)
         {
             // User must return their existing Books before borrowing again.
             throw new Exception(
-                $"User {Name} must return their borrowed books before borrowing again.");
+                $"User {Name} must return their borrowed books before "
+                    + "borrowing again.");
         }
 
         // Get todays date to calculate new due date.
@@ -72,7 +74,8 @@ public class User(int userId, string name, string email, double feesOwed = 0)
             else
             {
                 throw new ArgumentException(
-                    $"Cannot borrow book {book.Title}, as it is not available.");
+                    $"Cannot borrow book {book.Title}, as it is not "
+                        + "available.");
             }
         }
     }

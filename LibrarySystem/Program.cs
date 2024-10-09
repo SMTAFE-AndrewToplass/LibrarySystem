@@ -5,7 +5,8 @@ namespace LibrarySystem;
 internal static class Program
 {
     internal static Library library = new();
-    internal static string libraryPath = Path.Combine(Environment.CurrentDirectory, "library.json");
+    internal static string libraryPath = Path.Combine(
+        Environment.CurrentDirectory, "library.json");
     internal static JsonSerializerOptions options = new()
     {
         WriteIndented = true,
@@ -158,8 +159,6 @@ internal static class Program
     internal static IEnumerable<Book> InteractiveSearch(
         Func<string, IEnumerable<Book>> searchMethod)
     {
-        List<Book> books = [];
-
         Console.Clear();
         Console.WriteLine("Enter some characters to begin searching.");
 
@@ -167,23 +166,87 @@ internal static class Program
 
         // Cursor position, relative to left-most column.
         int left = 0;
+        int selected = -1;
         int scroll = 0;
+        List<Book> selection = [];
+        List<Book> results = [];
 
+    SearchLoop:
         while (true)
         {
             int maxHeight = Console.BufferHeight - 2;
             int bottom = Console.WindowHeight - 1;
+            int offsetBtm = scroll + maxHeight;
+            if (selected > results.Count)
+                selected = -1;
+
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("Interactive Search: ");
+            Console.ForegroundColor = ConsoleColor.DarkGray;
+            Console.WriteLine(
+                "Up/Down: Scroll, Enter: Select, Esc: Clear/Exit");
+            Utils.ResetForeground();
+
+
+            if (query.Length > 0)
+            {
+                results = [.. searchMethod(query)];
+                for (int i = scroll; i < results.Count && i < offsetBtm; i++)
+                {
+                    Book book = results[i];
+                    string bookInfo = $"{book.Title}, {book.Author}";
+                    SearchIndex[] indices = Utils.FuzzySearchDetailed(
+                        bookInfo, query);
+
+                    if (selected == i)
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+
+                    Console.Write(selection.Contains(book) ? "[x] " : "[ ] ");
+                    WriteHighlighted(bookInfo, indices);
+                    Utils.ResetBackground();
+                }
+            }
+            else
+            {
+                results = library.Copies;
+                for (int i = scroll; i < results.Count && i < offsetBtm; i++)
+                {
+                    Book book = results[i];
+                    string bookInfo = $"{book.Title}, {book.Author}";
+                    if (selected == i)
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+
+                    Console.Write(selection.Contains(book) ? "[x] " : "[ ] ");
+                    Console.WriteLine(bookInfo);
+                    Utils.ResetBackground();
+                }
+            }
+
+            // Print the prompt and input query.
             Console.CursorTop = bottom;
-            Console.Write(query);
+
+            if (query.Length < 1)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.Write("Start typing to search for a title...");
+                Utils.ResetForeground();
+            }
+            else
+            {
+                Console.Write(query);
+            }
+
             Console.CursorLeft = left;
             ConsoleKeyInfo key = Console.ReadKey(true);
 
+            // Input processing.
             switch (key.Key)
             {
                 // Exit search mode.
                 case ConsoleKey.Escape:
                     if (query.Length == 0)
-                        return [];
+                        goto Confirmation;
                     query = "";
                     left = 0;
                     break;
@@ -192,6 +255,8 @@ internal static class Program
                 case ConsoleKey.Delete:
                     if (left < query.Length)
                     {
+                        scroll = 0;
+                        selected = -1;
                         query = query.Remove(left, 1);
                         // Delete, clear next char, then go back one char.
                         Console.Write(" \b");
@@ -202,13 +267,23 @@ internal static class Program
                 case ConsoleKey.Backspace:
                     if (left > 0)
                     {
+                        scroll = 0;
+                        selected = -1;
                         query = query.Remove(left - 1, 1);
                         // Backspace. Go back one char, erase char with space
                         // (advances cursor forward), then go back again.
                         Console.Write("\b \b");
                         left--;
                     }
+                    break;
 
+                case ConsoleKey.Enter:
+                    if (selected < 0 || selected > results.Count)
+                        break;
+                    if (selection.Contains(results[selected]))
+                        selection.Remove(results[selected]);
+                    else if (selection.Count < 3)
+                        selection.Add(results[selected]);
                     break;
 
                 // Move cursor to the left.
@@ -224,13 +299,17 @@ internal static class Program
                     break;
 
                 case ConsoleKey.UpArrow:
-                    if (scroll > 0)
+                    if (selected > 0)
+                        selected--;
+                    if (scroll > 0 && (selected - 1 < offsetBtm - maxHeight))
                         scroll--;
                     break;
 
                 case ConsoleKey.DownArrow:
-                    if (scroll > 0)
-                        scroll--;
+                    if (selected < results.Count - 1)
+                        selected++;
+                    if ((scroll < results.Count) && (selected + 2 > offsetBtm))
+                        scroll++;
                     break;
 
                 // Go to beginning of line.
@@ -247,59 +326,68 @@ internal static class Program
                     // Only add printable characters to search query.
                     if (!char.IsControl(key.KeyChar))
                     {
+                        scroll = 0;
+                        selected = -1;
                         query = query.Insert(left, key.KeyChar.ToString());
                         left++;
                     }
                     break;
             }
-
-            Console.Clear();
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("Interactive Search: ");
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine("Up/Down: Scroll, Enter: Select, Esc: Clear/Exit");
-            Utils.ResetForeground();
-
-            if (query.Length > 0)
-            {
-                List<Book> res = [.. searchMethod(query)];
-                for (int i = 0; i < res.Count && i < maxHeight; i++)
-                {
-                    Book book = res[i];
-                    string bookInfo = $"{book.Title}, {book.Author}";
-                    SearchIndex[] indices = Utils.FuzzySearchDetailed(bookInfo, query);
-                    WriteHighlighted(bookInfo, indices);
-                }
-            }
-            else
-            {
-                List<Book> res = library.Copies;
-                for (int i = 0; i < res.Count && i < maxHeight; i++)
-                {
-                    Book book = res[i];
-                    string bookInfo = $"{book.Title}, {book.Author}";
-                    Console.WriteLine(bookInfo);
-                }
-            }
-
-
         }
 
-        // return books;
+    Confirmation:
+        string prompt = "";
+
+        if (selection.Count > 0)
+        {
+            prompt = "You have selected to borrow the following books:\n";
+            foreach (Book book in selection)
+            {
+                prompt += $" - {book.Title}, {book.Author}\n";
+            }
+        }
+        else
+        {
+            prompt = "You have not selected any books.\n";
+        }
+
+
+        int result = ReadMenu([
+            "Continue",
+            "Back to search"
+        ], prompt, true);
+
+        switch (result)
+        {
+            case 0:
+                break;
+            case 1:
+                goto SearchLoop;
+        }
+
+        return selection;
     }
 
-    public static void WriteHighlighted(string value, SearchIndex[] indices)
+    public static void SearchSelectionConfirm(List<Book> books)
+    {
+
+    }
+
+    public static void WriteHighlighted(string value, SearchIndex[] indices,
+        bool newline = true)
     {
         static void highlight(string v)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
+            Console.ForegroundColor = ConsoleColor.Blue;
             Console.Write(v);
             Utils.ResetForeground();
         }
 
         if (indices.Length < 1)
         {
-            Console.WriteLine(value);
+            Console.Write(value);
+            if (newline)
+                Console.WriteLine();
             return;
         }
 
@@ -319,7 +407,9 @@ internal static class Program
             }
             else
             {
-                Console.WriteLine(value[i..^0]);
+                Console.Write(value[i..^0]);
+                if (newline)
+                    Console.WriteLine();
                 i = value.Length;
             }
         }
