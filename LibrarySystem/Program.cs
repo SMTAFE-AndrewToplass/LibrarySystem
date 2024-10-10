@@ -22,35 +22,30 @@ internal static class Program
             LoadLibrary();
         }
 
-        while (true)
+        string mainMenuPrompt = "Welcome to the Library system\n";
+        mainMenuPrompt += "\n  To select and option, use the arrow keys or type and";
+        mainMenuPrompt += "\n  press enter, and press ESC to exit the menu.";
+
+        bool exit = false;
+        while (!exit)
         {
-            int res = ReadMenu(
-                prompt: "Welcome to the Library system.",
+            exit = Utils.Menu(
+                prompt: mainMenuPrompt,
                 options: [
-                    "Create new user account",
-                    "Login as user account",
-                    "Login as admin user",
-                    "Exit program"
+                    ("Create new user account",
+                        () => CreateUser()),
+
+                    ("Login as user account",
+                        () => SelectUser()),
+
+                    ("Login as admin user",
+                        () => AdminAccount()),
+
+                    ("Exit program",
+                        null),
                 ]
             );
-
-            switch (res)
-            {
-                case 0:
-                    CreateUser();
-                    break;
-                case 1:
-                    SelectUser();
-                    break;
-                case 2:
-                    AdminAccount();
-                    break;
-                case 3:
-                default:
-                    goto ExitProgram;
-            }
         }
-    ExitProgram:
         SaveLibrary();
     }
 
@@ -90,16 +85,19 @@ internal static class Program
     {
         Console.Clear();
         Console.WriteLine("Create a new user");
-        string name = ReadString("Please enter your name:");
-        string email = ReadString("Please enter your email address:");
+        string name = Utils.ReadString("Please enter your name:");
+        string email = Utils.ReadString("Please enter your email address:");
         library.AddUser(name, email);
         Console.WriteLine($"User {name} added successfully.");
     }
 
-    internal static void SelectUser()
+    internal static void SelectUser(IEnumerable<User>? source = null,
+        string prompt = "Please select from the list of users:")
     {
-        User[] users = [.. library.Users];
-        User? currentUser = ReadMenu("Please select from the list of users:",
+        // default user list is library.Users
+        source ??= library.Users;
+        User[] users = [.. source];
+        User? currentUser = Utils.ReadMenu(prompt,
             users, u => $"{u.UserId}, {u.Name} ({u.Email})");
 
         if (currentUser is not null)
@@ -110,7 +108,7 @@ internal static class Program
     {
         while (true)
         {
-            int res = ReadMenu(
+            int res = Utils.ReadMenu(
                 $"Welcome {user.Name},\nWhat would you like to do today?",
                 [
                     "View my borrowed books",
@@ -146,7 +144,7 @@ internal static class Program
                             prompt = "You are not currently borrowing any books.\n";
                         }
 
-                        Prompt(prompt);
+                        Utils.Prompt(prompt);
                         break;
                     }
 
@@ -159,11 +157,12 @@ internal static class Program
                             try
                             {
                                 user.BorrowBooks(books);
-                                Prompt("Books borrowed successfully.");
+                                DateOnly dueDate = (DateOnly)user.Books[0].DueDate!;
+                                Utils.Prompt($"Books borrowed successfully, they are due on {dueDate}.");
                             }
                             catch (Exception e)
                             {
-                                Prompt(
+                                Utils.Prompt(
                                     "Unable to borrow these books."
                                         + $"\n  Error: {e.Message} \n");
                             }
@@ -196,18 +195,18 @@ internal static class Program
                                 prompt += $"It will add ${fees:.00} in late fees.";
                             }
 
-                            res = ReadMenu(prompt, ["Yes", "No"], newline: true);
+                            res = Utils.ReadMenu(prompt, ["Yes", "No"], newline: true);
                             if (res == 0)
                             {
                                 try
                                 {
                                     user.ReturnBooks();
-                                    Prompt("Books returned successfully");
+                                    Utils.Prompt("Books returned successfully");
                                 }
                                 catch (Exception e)
                                 {
-                                    Prompt(
-                                    "Unable to return books."
+                                    Utils.Prompt(
+                                        "Unable to return books."
                                         + $"\n  Error: {e.Message} \n");
                                 }
                             }
@@ -216,7 +215,7 @@ internal static class Program
                         else
                         {
                             prompt = "You are not currently borrowing any books.\n";
-                            Prompt(prompt);
+                            Utils.Prompt(prompt);
                             break;
                         }
                     }
@@ -229,14 +228,15 @@ internal static class Program
                         if (user.FeesOwed > 0)
                         {
                             double fees = user.FeesOwed;
-                            prompt = $"You currently owe ${user.FeesOwed:.00} in late fees.\n\n";
+                            prompt = $"You currently owe ${user.FeesOwed:.00}";
+                            prompt += $" in late fees.\n\n";
                             prompt += "Would you like to pay your outstanding fees?";
 
-                            res = ReadMenu(prompt, ["Yes", "No"], newline: true);
+                            res = Utils.ReadMenu(prompt, ["Yes", "No"], newline: true);
                             if (res == 0)
                             {
                                 user.PayFee(fees);
-                                Prompt("Payment successful.");
+                                Utils.Prompt("Payment successful.");
                             }
 
                             break;
@@ -244,7 +244,7 @@ internal static class Program
                         else
                         {
                             prompt = "You do have any outstanding fees.\n";
-                            Prompt(prompt);
+                            Utils.Prompt(prompt);
                             break;
                         }
                     }
@@ -297,7 +297,7 @@ internal static class Program
 
                     Console.Write(selection.Contains(book) ? " [x] " : " [ ] ");
 
-                    WriteHighlighted(bookInfo, indices,
+                    Utils.WriteHighlighted(bookInfo, indices,
                         normal: book.IsAvailable ? null : ConsoleColor.Red);
 
                     Utils.ResetBackground();
@@ -439,7 +439,7 @@ internal static class Program
             }
         }
 
-        int result = ReadMenu(prompt, [
+        int result = Utils.ReadMenu(prompt, [
             "Borrow books",
             "Back to search",
             "Cancel"
@@ -459,303 +459,75 @@ internal static class Program
         return selection;
     }
 
-    public static void WriteHighlighted(string value, SearchIndex[] indices,
-        bool newline = true, ConsoleColor highlight = ConsoleColor.Blue,
-        ConsoleColor? normal = null)
+    internal static void SelectBook(IEnumerable<Book>? source = null,
+        string prompt = "Please select from the list of books:")
     {
-        void printHighlight(string v)
-        {
-            Console.ForegroundColor = highlight;
-            Console.Write(v);
-            if (normal is null)
-                Utils.ResetForeground();
-            else
-                Console.ForegroundColor = (ConsoleColor)normal;
-        }
-
-        if (indices.Length < 1)
-        {
-            Console.Write(value);
-            if (newline)
-                Console.WriteLine();
-            return;
-        }
-
-        for (int i = 0, j = 0; i < value.Length;)
-        {
-            SearchIndex index = indices[j];
-
-            Console.Write(value[i..index.Start]);
-            i = index.Start;
-
-            printHighlight(value[index.Start..index.End]);
-            i = index.End;
-
-            if (j < indices.Length - 1)
+        // default user list is library.Users
+        source ??= library.AvailableCopies;
+        Book[] users = [.. source];
+        Book? currentBook = Utils.ReadMenu(prompt,
+            users, book =>
             {
-                j++;
-            }
-            else
-            {
-                Console.Write(value[i..^0]);
-                if (newline)
-                    Console.WriteLine();
-                i = value.Length;
-            }
-        }
+                User? user = library.FindUserById(book.UserId);
+                string userInfo = "";
+                if (user is not null)
+                {
+                    userInfo = $", borrowed by {user.Name} ({user.UserId})";
+                }
+                return $"{book.UniqueId}: {book.Title}, {book.Author}{userInfo}";
+            });
+
+        if (currentBook is not null)
+            BookInfo(currentBook);
     }
 
-    internal static IEnumerable<Book> SelectBooks()
+    public static void BookInfo(Book book)
     {
-        List<Book> books = [];
-        while (true)
+        string bookInfo = $"[Book information]\n";
+        bookInfo += $"  Title: {book.Title}\n";
+        bookInfo += $"  Author: {book.Author}\n";
+        bookInfo += $"  Publication Date: {book.PublicationDate}\n";
+        bookInfo += $"  BookId: {book.BookId}\n";
+        bookInfo += $"  UniqueId: {book.UniqueId}\n";
+
+        if (book.UserId >= 0)
         {
-            int res = ReadMenu(
-                prompt: "Select books:",
-                options: [
-                    "Search by title",
-                    "Search by author",
-                    "Search by keyword",
-                    "Continue with books",
-                    "Cancel search"
-                ]
-            );
-
-            switch (res)
+            User? user = library.FindUserById(book.UserId);
+            if (user is not null && book.DueDate is not null)
             {
-                case 0:
-                    {
-                        string query = ReadString("");
-                        break;
-                    }
-
-                case 1:
-                    break;
-
-                case 2:
-                    break;
-
-                case 3:
-                    return books;
-
-                case 4:
-                    return [];
+                bookInfo += $"  Borrowed by: {user.Name} ({user.UserId})\n";
+                bookInfo += $"  Due date: {book.DueDate}\n";
             }
         }
+        Utils.Prompt(bookInfo);
     }
 
     internal static void AdminAccount()
     {
-        static string bookDisplay(Book book)
+        bool exit = false;
+        while (!exit)
         {
-            User? user = library.FindUserById(book.UserId);
-            string userInfo = "";
-            if (user is not null)
-            {
-                userInfo = $", borrowed by {user.Name} ({user.UserId})";
-            }
-            return $"{book.UniqueId}: {book.Title}, {book.Author}{userInfo}";
-        }
-        static string userDisplay(User user) =>
-            $"{user.UserId}, {user.Name} ({user.Email})";
+            exit = Utils.Menu(
+                "[Admin mode]:",
+                [
+                    ("View all books",
+                        () => SelectBook(library.Books,
+                            prompt: "All books in the library")),
 
-        while (true)
-        {
-            int res = ReadMenu(
-                prompt: "Select books:",
-                options: [
-                    "View all books",
-                    "View all users",
-                    "View all borrowed books",
-                    "View all borrowing users",
-                    "Logout"
+                    ("View all users",
+                        () => SelectUser(prompt: "All users")),
+
+                    ("View all borrowed books",
+                        () => SelectBook(library.GetBorrowedBooks(),
+                            prompt: "All borrowed books in the library")),
+
+                    ("View all borrowing users",
+                        () => SelectUser(library.GetBorrowingUsers(),
+                            prompt: "All borrowing users")),
+
+                    ("Logout", null),
                 ]
             );
-
-            switch (res)
-            {
-                // View all books
-                case 0:
-                    {
-                        Book[] books = [.. library.Books];
-                        ReadMenu("All books in the library", books, bookDisplay);
-                        break;
-                    }
-
-                // View all users
-                case 1:
-                    {
-                        User[] users = [.. library.Users];
-                        User? currentUser = ReadMenu("All users in the library",
-                            users, userDisplay);
-
-                        if (currentUser is not null)
-                            UserAccount(currentUser);
-                        break;
-                    }
-
-                // View all borrowed books
-                case 2:
-                    {
-                        Book[] books = [.. library.GetBorrowedBooks()];
-                        ReadMenu("All borrowed books in the library", books, bookDisplay);
-                        break;
-                    }
-
-                // View all borrowing users
-                case 3:
-                    {
-                        User[] users = [.. library.GetBorrowingUsers()];
-                        User? currentUser = ReadMenu("All borrowing users in the library",
-                            users, userDisplay);
-
-                        if (currentUser is not null)
-                            UserAccount(currentUser);
-                        break;
-                    }
-
-                case 4:
-                default:
-                    return;
-            }
-        }
-    }
-
-    internal static string ReadString(string? prompt = null)
-    {
-        while (true)
-        {
-            if (!string.IsNullOrEmpty(prompt))
-            {
-                Console.WriteLine(prompt);
-            }
-            string? result = Console.ReadLine();
-            if (string.IsNullOrEmpty(result))
-            {
-                Console.WriteLine("Invalid input, please try again.\n");
-            }
-            else
-            {
-                return result;
-            }
-        }
-    }
-
-    internal static int ReadInt(string? prompt = null)
-    {
-        while (true)
-        {
-            if (!string.IsNullOrEmpty(prompt))
-            {
-                Console.WriteLine(prompt);
-            }
-            if (int.TryParse(Console.ReadLine(), out int res))
-            {
-                return res;
-            }
-            else
-            {
-                Console.WriteLine("Invalid input, please try again.\n");
-            }
-        }
-    }
-
-    internal static T? ReadMenu<T>(string prompt, T[] values, Func<T, string> convert) where T : class
-    {
-        string[] options = [.. values.Select(convert)];
-        int result = ReadMenu(prompt, options);
-        if (result >= 0 && result < values.Length)
-            return values[result];
-        else
-            return null;
-    }
-
-    internal static void Prompt(string prompt)
-    {
-        Console.Clear();
-        if (!string.IsNullOrEmpty(prompt))
-        {
-            Console.WriteLine(prompt);
-        }
-        Console.Write("Press any key to continue ");
-        Console.ReadKey();
-    }
-
-    internal static int ReadMenu(string prompt, string[] options, string? optionPrompt = null, bool newline = true)
-    {
-        Console.Clear();
-        // Print prompt.
-        if (!string.IsNullOrEmpty(prompt))
-        {
-            Console.WriteLine(prompt);
-            if (newline)
-                Console.WriteLine();
-        }
-        for (int i = 0; i < options.Length; i++)
-        {
-            Console.WriteLine($" {i + 1}) {options[i]}");
-        }
-
-        Console.WriteLine();
-        int lineNo = Console.CursorTop;
-        string buffer = "";
-        bool inputSuccess;
-        int opt;
-        while (true)
-        {
-            Console.CursorLeft = 0;
-            Console.CursorTop = lineNo;
-            Console.Write(new string(' ', Console.WindowWidth));
-            Console.CursorLeft = 0;
-            Console.Write(optionPrompt ?? $"Enter option: ");
-            Console.Write(buffer);
-            var key = Console.ReadKey(true);
-
-            void setBuffer(int num)
-            {
-                buffer = Math.Clamp(num, 1, options.Length).ToString();
-            }
-
-            switch (key.Key)
-            {
-                case ConsoleKey.Escape:
-                    return -1;
-
-                case ConsoleKey.Backspace:
-                    if (buffer.Length > 0)
-                        buffer = buffer[..^1];
-                    break;
-
-                case ConsoleKey.UpArrow:
-                    _ = int.TryParse(buffer, out opt);
-                    setBuffer(--opt);
-                    break;
-
-                case ConsoleKey.DownArrow:
-                    _ = int.TryParse(buffer, out opt);
-                    setBuffer(++opt);
-                    break;
-
-                case ConsoleKey.Enter:
-                    inputSuccess = int.TryParse(buffer, out opt);
-                    buffer = "";
-                    if (inputSuccess && opt > 0 && opt <= options.Length)
-                    {
-                        return opt - 1;
-                    }
-                    break;
-
-                default:
-                    if (char.IsDigit(key.KeyChar))
-                    {
-                        buffer += key.KeyChar;
-                    }
-                    break;
-            }
-
-            //string? line = Console.ReadLine();
-            //bool inputSuccess = int.TryParse(line, out int opt);
-
         }
     }
 }

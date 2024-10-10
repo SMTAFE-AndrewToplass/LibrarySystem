@@ -115,6 +115,207 @@ public static class Utils
         Console.ResetColor();
         Console.ForegroundColor = fg;
     }
+
+    internal static int ReadMenu(string prompt, string[] options,
+        string? optionPrompt = null, bool newline = true)
+    {
+        Console.Clear();
+        // Print prompt.
+        if (!string.IsNullOrEmpty(prompt))
+        {
+            Console.WriteLine(prompt);
+            if (newline)
+                Console.WriteLine();
+        }
+        for (int i = 0; i < options.Length; i++)
+        {
+            Console.WriteLine($" {i + 1}) {options[i]}");
+        }
+
+        Console.WriteLine();
+        int lineNo = Console.CursorTop;
+        string buffer = "";
+        bool inputSuccess;
+        int opt;
+        while (true)
+        {
+            Console.CursorLeft = 0;
+            Console.CursorTop = lineNo;
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.CursorLeft = 0;
+            Console.Write(optionPrompt ?? $"Enter option: ");
+            Console.Write(buffer);
+            var key = Console.ReadKey(true);
+
+            void setBuffer(int num)
+            {
+                buffer = Math.Clamp(num, 1, options.Length).ToString();
+            }
+
+            switch (key.Key)
+            {
+                case ConsoleKey.Escape:
+                    return -1;
+
+                case ConsoleKey.Backspace:
+                    if (buffer.Length > 0)
+                        buffer = buffer[..^1];
+                    break;
+
+                case ConsoleKey.UpArrow:
+                    _ = int.TryParse(buffer, out opt);
+                    setBuffer(--opt);
+                    break;
+
+                case ConsoleKey.DownArrow:
+                    _ = int.TryParse(buffer, out opt);
+                    setBuffer(++opt);
+                    break;
+
+                case ConsoleKey.Enter:
+                    inputSuccess = int.TryParse(buffer, out opt);
+                    buffer = "";
+                    if (inputSuccess && opt > 0 && opt <= options.Length)
+                    {
+                        return --opt;
+                    }
+                    break;
+
+                default:
+                    if (char.IsDigit(key.KeyChar))
+                    {
+                        buffer += key.KeyChar;
+                    }
+                    break;
+            }
+        }
+    }
+
+    internal static string ReadString(string? prompt = null)
+    {
+        while (true)
+        {
+            if (!string.IsNullOrEmpty(prompt))
+            {
+                Console.WriteLine(prompt);
+            }
+            string? result = Console.ReadLine();
+            if (string.IsNullOrEmpty(result))
+            {
+                Console.WriteLine("Invalid input, please try again.\n");
+            }
+            else
+            {
+                return result;
+            }
+        }
+    }
+
+    internal static int ReadInt(string? prompt = null)
+    {
+        while (true)
+        {
+            if (!string.IsNullOrEmpty(prompt))
+            {
+                Console.WriteLine(prompt);
+            }
+            if (int.TryParse(Console.ReadLine(), out int res))
+            {
+                return res;
+            }
+            else
+            {
+                Console.WriteLine("Invalid input, please try again.\n");
+            }
+        }
+    }
+
+    internal static T? ReadMenu<T>(string prompt, T[] values, Func<T, string> convert) where T : class
+    {
+        string[] options = [.. values.Select(convert)];
+        int result = ReadMenu(prompt, options);
+        if (result >= 0 && result < values.Length)
+            return values[result];
+        else
+            return null;
+    }
+
+    internal static void Prompt(string prompt)
+    {
+        Console.Clear();
+        if (!string.IsNullOrEmpty(prompt))
+        {
+            Console.WriteLine(prompt);
+        }
+        Console.Write("Press any key to continue ");
+        Console.ReadKey();
+    }
+
+    internal delegate void MenuCallback();
+
+    internal static bool Menu(string prompt, (string, MenuCallback?)[] options,
+        string? optionPrompt = null, bool newline = true)
+    {
+        string[] opts = [.. options.Select(o => o.Item1)];
+        MenuCallback?[] callbacks = [.. options.Select(o => o.Item2)];
+        int result = ReadMenu(prompt, opts, optionPrompt, newline);
+        if (result >= 0 && result < callbacks.Length)
+        {
+            MenuCallback? callback = callbacks[result];
+            if (callback is not null)
+            {
+                callback();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void WriteHighlighted(string value, SearchIndex[] indices,
+        bool newline = true, ConsoleColor highlight = ConsoleColor.Blue,
+        ConsoleColor? normal = null)
+    {
+        void printHighlight(string v)
+        {
+            Console.ForegroundColor = highlight;
+            Console.Write(v);
+            if (normal is null)
+                Utils.ResetForeground();
+            else
+                Console.ForegroundColor = (ConsoleColor)normal;
+        }
+
+        if (indices.Length < 1)
+        {
+            Console.Write(value);
+            if (newline)
+                Console.WriteLine();
+            return;
+        }
+
+        for (int i = 0, j = 0; i < value.Length;)
+        {
+            SearchIndex index = indices[j];
+
+            Console.Write(value[i..index.Start]);
+            i = index.Start;
+
+            printHighlight(value[index.Start..index.End]);
+            i = index.End;
+
+            if (j < indices.Length - 1)
+            {
+                j++;
+            }
+            else
+            {
+                Console.Write(value[i..^0]);
+                if (newline)
+                    Console.WriteLine();
+                i = value.Length;
+            }
+        }
+    }
 }
 
 public readonly struct SearchIndex
