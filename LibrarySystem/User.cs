@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using Microsoft.VisualBasic;
+using System.Text.Json.Serialization;
 
 namespace LibrarySystem;
 
@@ -96,7 +97,8 @@ public class User(int userId, string name, string email, double feesOwed = 0)
     public void ReturnBooks()
     {
         DateOnly today = DateOnly.FromDateTime(DateTime.Today);
-        foreach (Book book in Books)
+        IEnumerable<Book> books = [.. Books];
+        foreach (Book book in books)
         {
             if (book.UserId == UserId && book.DueDate is not null)
             {
@@ -118,6 +120,25 @@ public class User(int userId, string name, string email, double feesOwed = 0)
                 UniqueBookIds.Remove(book.UniqueId);
             }
         }
+    }
+
+    public double GetLateFee(Book book)
+    {
+        DateOnly today = DateOnly.FromDateTime(DateTime.Today);
+        if (book.DueDate is not null)
+        {
+            DateOnly dueDate = (DateOnly)book.DueDate;
+
+            // Get the number of days between today and the book's due date,
+            // limited to 0 if the due date is in the future.
+            int daysLate = Math.Max(today.DayNumber - dueDate.DayNumber, 0);
+
+            // Apply late fees for returning the Book late (no fees are
+            // applied if daysLate is 0).
+            double fees = Library.LateFeePerDay * daysLate;
+            return fees;
+        }
+        return 0.0;
     }
 
     /// <summary>

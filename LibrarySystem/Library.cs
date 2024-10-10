@@ -19,6 +19,15 @@ public class Library
             .Select(b => b.First())];
     }
 
+    [JsonIgnore]
+    public List<Book> AvailableCopies
+    {
+        // Will try to return only available copies of a book, but may
+        // return an unavailable copy if there are not any available.
+        get => [.. Books.GroupBy(b => b.BookId)
+            .Select(b => b.FirstOrDefault(b2 => b2.IsAvailable, b.First()))];
+    }
+
     [JsonInclude] private int nextBookId = 1;
     [JsonInclude] private int nextUserId = 1;
     [JsonInclude] private int nextUniqueBookId = 1;
@@ -93,9 +102,10 @@ public class Library
     /// </summary>
     /// <param name="keyword">Keyword to search for.</param>
     /// <returns>An enumerable containing a list of matching books.</returns>
-    public IEnumerable<Book> SearchByKeyword(string keywords)
+    public IEnumerable<Book> SearchByKeyword(string keywords, IEnumerable<Book>? list = null)
     {
-        return Books
+        list ??= AvailableCopies;
+        return list
             .GroupBy(b => b.BookId)
             .Select(b => b.First())
             .Where(b =>
