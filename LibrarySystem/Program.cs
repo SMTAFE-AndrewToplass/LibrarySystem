@@ -207,7 +207,7 @@ internal static class Program
             int bottom = Console.WindowHeight - 1;
             int offsetBtm = scroll + maxHeight;
             if (selected > results.Count)
-                selected = -1;
+                selected = 0;
 
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.Green;
@@ -224,10 +224,11 @@ internal static class Program
                 for (int i = scroll; i < results.Count && i < offsetBtm; i++)
                 {
                     Book book = results[i];
-                    string bookInfo = $"{book.Title}, {book.Author}";
+                    string bookInfo = $"{book.Title}, {book.Author} ";
                     SearchIndex[] indices = Utils.FuzzySearchDetailed(
                         bookInfo, query);
 
+                    Console.Write(" ");
                     if (selected == i)
                         Console.BackgroundColor = ConsoleColor.DarkGray;
 
@@ -242,7 +243,7 @@ internal static class Program
                 for (int i = scroll; i < results.Count && i < offsetBtm; i++)
                 {
                     Book book = results[i];
-                    string bookInfo = $"{book.Title}, {book.Author}";
+                    string bookInfo = $"{book.Title}, {book.Author} ";
                     if (selected == i)
                         Console.BackgroundColor = ConsoleColor.DarkGray;
 
@@ -365,7 +366,7 @@ internal static class Program
         }
 
     Confirmation:
-        string prompt = "";
+        string prompt = "You have not selected any books.\n";
 
         if (selection.Count > 0)
         {
@@ -375,13 +376,8 @@ internal static class Program
                 prompt += $" - {book.Title}, {book.Author}\n";
             }
         }
-        else
-        {
-            prompt = "You have not selected any books.\n";
-        }
 
-
-        int result = ReadMenu(prompt, [
+        int result = ReadMenu("", [
             "Continue",
             "Back to search"
         ]);
@@ -543,28 +539,75 @@ internal static class Program
     {
         int promptHeight = prompt.Split('\n').Length;
         Console.Clear();
-        int selected = -1;
+        int selected = 0;
         int scroll = 0;
+        bool redraw = true;
+        int lastSelected = -1;
+        int maxHeight = 0;
+        int offsetBtm = 0;
 
         while (true)
         {
-            int maxHeight = Console.WindowHeight - 1 - promptHeight;
-            int offsetBtm = scroll + maxHeight;
-
-            Console.Clear();
-            Console.Write($"{prompt}\n");
-            Utils.ResetForeground();
+            if (offsetBtm != (scroll + maxHeight))
+                redraw = true;
+            maxHeight = Console.WindowHeight - 1 - promptHeight;
+            offsetBtm = scroll + maxHeight;
 
             {
-                for (int i = scroll; i < options.Length && i < offsetBtm; i++)
+                if (redraw)
                 {
-                    if (selected == i)
-                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                    Console.Clear();
+                    Console.Write($"{prompt}\n");
+                    Utils.ResetForeground();
+                    for (int i = scroll; i < options.Length && i < offsetBtm; i++)
+                    {
+                        //int lineNo = Console.CursorTop;
 
-                    Console.WriteLine($" {i + 1}) {options[i]}");
+                        Console.Write(" ");
+                        if (selected == i)
+                            Console.BackgroundColor = ConsoleColor.DarkGray;
 
-                    Utils.ResetBackground();
+                        Console.WriteLine($" {i + 1}) {options[i]} ");
+
+                        Utils.ResetBackground();
+                    }
+                    redraw = false;
                 }
+                else
+                {
+                    Console.CursorTop = 0;
+                    Console.CursorTop += promptHeight;
+                    int last = lastSelected;
+                    for (int i = scroll; i < options.Length && i < offsetBtm; i++)
+                    {
+                        if (Console.CursorTop == last)
+                        {
+                            lastSelected = -1;
+                            Console.CursorLeft = 0;
+                            Utils.ResetBackground();
+                            Console.Write(" ");
+                            Console.Write($" {i + 1}) {options[i]} ");
+                            Console.WriteLine();
+                            //Console.CursorTop--;
+                            //i--;
+                            continue;
+                        }
+
+                        if (selected == i)
+                        {
+                            lastSelected = Console.CursorTop;
+                            Console.Write(" ");
+                            Console.BackgroundColor = ConsoleColor.DarkGray;
+                            Console.Write($" {i + 1}) {options[i]} ");
+                            Utils.ResetBackground();
+                            Console.WriteLine();
+                        }
+                        
+                        if (!(Console.CursorTop == lastSelected || selected == i))
+                            Console.CursorTop++;
+                    }
+                }
+
             }
 
             ConsoleKeyInfo key = Console.ReadKey(true);
@@ -585,14 +628,20 @@ internal static class Program
                     if (selected > 0)
                         selected--;
                     if (scroll > 0 && (selected - 1 < offsetBtm - maxHeight))
+                    {
+                        redraw = true;
                         scroll--;
+                    }
                     break;
 
                 case ConsoleKey.DownArrow:
                     if (selected < options.Length - 1)
                         selected++;
                     if ((scroll < options.Length) && (selected + 2 > offsetBtm))
+                    {
+                        redraw = true;
                         scroll++;
+                    }
                     break;
 
                 // Go to first option.
