@@ -26,26 +26,20 @@ internal static class Program
         mainMenuPrompt += "\n  To select and option, use the arrow keys or type and";
         mainMenuPrompt += "\n  press enter, and press ESC to exit the menu.";
 
-        bool exit = false;
-        while (!exit)
-        {
-            exit = Utils.Menu(
-                prompt: mainMenuPrompt,
-                options: [
-                    ("Create new user account",
-                        () => CreateUser()),
+        while (!Utils.Menu(prompt: mainMenuPrompt, options:
+        [
+            ("Create new user account",
+                () => CreateUser()),
 
-                    ("Login as user account",
-                        () => SelectUser()),
+            ("Login as user account",
+                () => SelectUser()),
 
-                    ("Login as admin user",
-                        () => AdminAccount()),
+            ("Login as admin user",
+                () => AdminAccount()),
 
-                    ("Exit program",
-                        null),
-                ]
-            );
-        }
+            ("Exit program",
+                null),
+        ]));
         SaveLibrary();
     }
 
@@ -288,9 +282,13 @@ internal static class Program
                 for (int i = 0; i < results.Count; i++)
                 {
                     Book book = results[i];
-                    string bookInfo = $"{book.Title}, {book.Author} ";
+                    string bookInfo = $"{book.Title}, {book.Author}";
                     SearchIndex[] indices = Utils.FuzzySearchDetailed(
                         bookInfo, query);
+
+                    // Additional information, not included in search.
+                    bookInfo += $", published: {book.PublicationDate}";
+                    bookInfo += $", available: {library.GetNumberOfAvailableCopies(book)} ";
 
                     if (selected == i)
                         Console.BackgroundColor = ConsoleColor.DarkGray;
@@ -309,7 +307,12 @@ internal static class Program
                 for (int i = 0; i < results.Count; i++)
                 {
                     Book book = results[i];
-                    string bookInfo = $"{book.Title}, {book.Author} ";
+                    string bookInfo = $"{book.Title}, {book.Author}";
+
+                    // Additional information, not included in search.
+                    bookInfo += $", published: {book.PublicationDate}";
+                    bookInfo += $", available: {library.GetNumberOfAvailableCopies(book)} ";
+
                     if (selected == i)
                         Console.BackgroundColor = ConsoleColor.DarkGray;
 

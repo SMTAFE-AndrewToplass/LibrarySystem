@@ -275,18 +275,24 @@ public static class Utils
         bool newline = true, ConsoleColor highlight = ConsoleColor.Blue,
         ConsoleColor? normal = null)
     {
-        void printHighlight(string v)
+        void setColour()
         {
-            Console.ForegroundColor = highlight;
-            Console.Write(v);
             if (normal is null)
-                Utils.ResetForeground();
+                ResetForeground();
             else
                 Console.ForegroundColor = (ConsoleColor)normal;
         }
 
-        if (indices.Length < 1)
+        void printHighlight(string v)
         {
+            Console.ForegroundColor = highlight;
+            Console.Write(v);
+            setColour();
+        }
+
+        if (indices.Length == 0)
+        {
+            setColour();
             Console.Write(value);
             if (newline)
                 Console.WriteLine();
