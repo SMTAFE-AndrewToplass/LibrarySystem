@@ -20,6 +20,7 @@ internal static class Program
         {
             // Load the saved library file containing all the books and users.
             LoadLibrary();
+            return;
         }
 
         string mainMenuPrompt = "Welcome to the Library system\n";
@@ -72,6 +73,17 @@ internal static class Program
                             "Error: book did not match its user id.");
                 }
             }
+        }
+
+        foreach (User user in library.Users)
+        {
+            Console.WriteLine($"new User({user.UserId}, \"{user.Name}\", \"{user.Email}\", {user.FeesOwed}),");
+        }
+
+        foreach (Book book in library.Books)
+        {
+            DateOnly d = book.PublicationDate;
+            Console.WriteLine($"new Book({book.UniqueId}, {book.BookId}, \"{book.Title}\", \"{book.Author}\", new({d.Year}, {d.Month}, {d.Day})),");
         }
     }
 
