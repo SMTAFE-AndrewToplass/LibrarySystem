@@ -68,6 +68,32 @@ public class Library
         Users.Add(user);
     }
 
+    public void AddUser(User user)
+    {
+        if (user.UserId > nextUserId)
+            nextUserId = user.UserId + 1;
+        int userId = user.UserId > -1 ? user.UserId : nextUserId++;
+        User newUser = new(userId, user.Name, user.Email, user.FeesOwed);
+        Users.Add(newUser);
+    }
+
+    public void AddBook(Book book, int copies = 1)
+    {
+        if (book.BookId > nextBookId)
+            nextBookId = book.BookId + 1;
+        // Copies of the same book will share an id so they can be identified as
+        // copies.
+        int bookId = book.BookId > -1 ? book.BookId : nextBookId++;
+        int uniqueBookId = nextUniqueBookId++;
+        for (int i = 0; i < copies; i++)
+        {
+            Book newBook = new(uniqueBookId, bookId, book.Title, book.Author,
+                book.PublicationDate);
+            Books.Add(newBook);
+        }
+    }
+
+
     /// <summary>
     /// Search for a book by its title.
     /// </summary>
@@ -221,6 +247,4 @@ public class Library
     /// books.</returns>
     public IEnumerable<User> GetBorrowingUsers() =>
         Users.Where(u => u.Books.Count > 0);
-
-
 }
